@@ -1,6 +1,6 @@
 # Pizza Shop Architecture Demo
 
-This is a public demo repo to experiment with a modular architecture for a pizza shop application.
+This is a public demo repo to experiment with a vertical slice architecture with Orleans for a pizza shop application.
 
 Core business domains (high level):
 - Menu & Catalog
