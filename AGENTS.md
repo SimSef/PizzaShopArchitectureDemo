@@ -36,4 +36,10 @@ Scope: This file applies to the entire `PizzaShopArchitectureDemo` repository.
 ## Agent guidelines
 
 - Do not scaffold projects or code structure beyond this outline until explicitly requested.
-- As the user shares Orleans-related information, append it here in new sections, keeping it concise and organized.
+- For Orleans-specific concepts, patterns, and “how to design grains/silos/streams”, prefer the documentation in the `Orleans info` folder:
+  - Examples:
+    - Grain basics, timeouts, lifecycle: `Orleans info/01-grains-basics.md`, `Orleans info/20-grain-lifecycle.md`.
+    - Persistence and event sourcing: `Orleans info/12-grain-persistence.md`, `Orleans info/13-event-sourcing.md`.
+    - Streaming and broadcast: `Orleans info/22-streaming-basics-and-use-cases.md`, `Orleans info/23-stream-providers-and-broadcast-channels.md`.
+    - Host/client concerns: `Orleans info/24-host-clients.md`, `Orleans info/25-host-silo-lifecycle.md`.
+- When extending Orleans behavior or adding new grains, consult these docs first and keep new notes in that folder instead of this file.
