@@ -11,6 +11,12 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Keycloak" Version="13.0.0-preview.1.25560.3" />
     <PackageReference Include="Aspire.Hosting.Orleans" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PizzaShop.Orleans.Server\PizzaShop.Orleans.Server.csproj" />
+    <ProjectReference Include="..\PizzaShop.Web\PizzaShop.Web\PizzaShop.Web.csproj" />
   </ItemGroup>
 
 </Project>

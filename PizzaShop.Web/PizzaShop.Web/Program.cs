@@ -1,156 +1,119 @@
+using System;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Yarp.ReverseProxy.Transforms;
-using BlazorWebAppOidc;
-using BlazorWebAppOidc.Client.Weather;
-using BlazorWebAppOidc.Components;
+using PizzaShop.Orleans.Contract;
+using PizzaShop.Web;
+using PizzaShop.Web.Components;
+using Azure.Data.Tables;
+using Azure.Storage.Blobs;
+using Azure.Storage.Queues;
 
-const string MS_OIDC_SCHEME = "MicrosoftOidc";
+const string CorsPolicyName = "bff";
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add service defaults & Aspire components.
-builder.AddServiceDefaults();
+// Explicitly register keyed Azure clients using Aspire-provided connection strings.
+// Orleans expects keyed services matching the configured ServiceKey names.
+string GetConnection(string name) =>
+    builder.Configuration.GetConnectionString(name)
+    ?? throw new InvalidOperationException($"Missing connection string '{name}'.");
 
-// Add services to the container.
-builder.Services.AddAuthentication(MS_OIDC_SCHEME)
-    .AddOpenIdConnect(MS_OIDC_SCHEME, oidcOptions =>
+builder.Services.AddKeyedSingleton<TableServiceClient>("orleans-clustering",
+    (_, _) => new TableServiceClient(GetConnection("orleans-clustering")));
+builder.Services.AddKeyedSingleton<TableServiceClient>("orleans-reminders",
+    (_, _) => new TableServiceClient(GetConnection("orleans-reminders")));
+builder.Services.AddKeyedSingleton<BlobServiceClient>("orleans-grainstate",
+    (_, _) => new BlobServiceClient(GetConnection("orleans-grainstate")));
+builder.Services.AddKeyedSingleton<QueueServiceClient>("orleans-streams",
+    (_, _) => new QueueServiceClient(GetConnection("orleans-streams")));
+builder.UseOrleansClient();
+
+// SPA origin for BFF CORS (required, no defaults).
+var spaOrigin = builder.Configuration["Spa:Origin"] ?? builder.Configuration["Spa__Origin"];
+if (string.IsNullOrWhiteSpace(spaOrigin))
+{
+    throw new InvalidOperationException("Missing required configuration for SPA origin. Set 'Spa__Origin' (or 'Spa:Origin') via Aspire AppHost or environment.");
+}
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicyName, policy =>
     {
-        // For the following OIDC settings, any line that's commented out
-        // represents a DEFAULT setting. If you adopt the default, you can
-        // remove the line if you wish.
+        policy.WithOrigins(spaOrigin)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
-        // ........................................................................
-        // Pushed Authorization Requests (PAR) support. By default, the setting is
-        // to use PAR if the identity provider's discovery document (usually found 
-        // at '.well-known/openid-configuration') advertises support for PAR. If 
-        // you wish to require PAR support for the app, you can assign 
-        // 'PushedAuthorizationBehavior.Require' to 'PushedAuthorizationBehavior'.
-        //
-        // Note that PAR isn't supported by Microsoft Entra, and there are no plans
-        // for Entra to ever support it in the future.
+// Keycloak configuration via env/config (BFF pattern) — all required, no defaults.
+var keycloakAuthority = builder.Configuration["Keycloak:Authority"] ?? builder.Configuration["Keycloak__Authority"];
+if (string.IsNullOrWhiteSpace(keycloakAuthority))
+{
+    throw new InvalidOperationException("Missing required configuration 'Keycloak__Authority' (or 'Keycloak:Authority').");
+}
 
-        //oidcOptions.PushedAuthorizationBehavior = PushedAuthorizationBehavior.UseIfAvailable;
-        // ........................................................................
+var keycloakClientId = builder.Configuration["Keycloak:ClientId"] ?? builder.Configuration["Keycloak__ClientId"];
+if (string.IsNullOrWhiteSpace(keycloakClientId))
+{
+    throw new InvalidOperationException("Missing required configuration 'Keycloak__ClientId' (or 'Keycloak:ClientId').");
+}
 
-        // ........................................................................
-        // The OIDC handler must use a sign-in scheme capable of persisting 
-        // user credentials across requests.
+var keycloakClientSecret = builder.Configuration["Keycloak:ClientSecret"] ?? builder.Configuration["Keycloak__ClientSecret"];
+if (string.IsNullOrWhiteSpace(keycloakClientSecret))
+{
+    throw new InvalidOperationException("Missing required configuration 'Keycloak__ClientSecret' (or 'Keycloak:ClientSecret').");
+}
 
-        oidcOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        // ........................................................................
-
-        // ........................................................................
-        // The "openid" and "profile" scopes are required for the OIDC handler 
-        // and included by default. You should enable these scopes here if scopes 
-        // are provided by "Authentication:Schemes:MicrosoftOidc:Scope" 
-        // configuration because configuration may overwrite the scopes collection.
-
-        //oidcOptions.Scope.Add(OpenIdConnectScope.OpenIdProfile);
-        // ........................................................................
-
-        // ........................................................................
-        // The following paths must match the redirect and post logout redirect 
-        // paths configured when registering the application with the OIDC provider. 
-        // The default values are "/signin-oidc" and "/signout-callback-oidc".
-
-        //oidcOptions.CallbackPath = new PathString("/signin-oidc");
-        //oidcOptions.SignedOutCallbackPath = new PathString("/signout-callback-oidc");
-        // ........................................................................
-
-        // ........................................................................
-        // The RemoteSignOutPath is the "Front-channel logout URL" for remote single 
-        // sign-out. The default value is "/signout-oidc".
-
-        //oidcOptions.RemoteSignOutPath = new PathString("/signout-oidc");
-        // ........................................................................
-
-        // ........................................................................
-        // The "Weather.Get" scope for accessing the external web API for weather
-        // data. The following example is based on using Microsoft Entra ID in 
-        // an ME-ID tenant domain (the {APP ID URI} placeholder is found in
-        // the Entra or Azure portal where the web API is exposed). For any other
-        // identity provider, use the appropriate scope.
-
-        oidcOptions.Scope.Add("{APP ID URI}/Weather.Get");
-        // ........................................................................
-
-        // ........................................................................
-        // The following example Authority is configured for Microsoft Entra ID
-        // and a single-tenant application registration. Set the {TENANT ID} 
-        // placeholder to the Tenant ID. The "common" Authority 
-        // https://login.microsoftonline.com/common/v2.0/ should be used 
-        // for multi-tenant apps. You can also use the "common" Authority for 
-        // single-tenant apps, but it requires a custom IssuerValidator as shown 
-        // in the comments below. 
-
-        oidcOptions.Authority = "https://login.microsoftonline.com/{TENANT ID}/v2.0/";
-        // ........................................................................
-
-        // ........................................................................
-        // Set the Client ID for the app. Set the {CLIENT ID} placeholder to
-        // the Client ID.
-
-        oidcOptions.ClientId = "{CLIENT ID}";
-        // ........................................................................
-
-        // ........................................................................
-        // Setting ResponseType to "code" configures the OIDC handler to use 
-        // authorization code flow. Implicit grants and hybrid flows are unnecessary
-        // in this mode. In a Microsoft Entra ID app registration, you don't need to 
-        // select either box for the authorization endpoint to return access tokens 
-        // or ID tokens. The OIDC handler automatically requests the appropriate 
-        // tokens using the code returned from the authorization endpoint.
-
-        oidcOptions.ResponseType = OpenIdConnectResponseType.Code;
-        // ........................................................................
-
-        // ........................................................................
-        // // Set MapInboundClaims to "false" to obtain the original claim types from 
-        // the token. Many OIDC servers use "name" and "role"/"roles" rather than 
-        // the SOAP/WS-Fed defaults in ClaimTypes. Adjust these values if your 
-        // identity provider uses different claim types.
-
-        oidcOptions.MapInboundClaims = false;
-        oidcOptions.TokenValidationParameters.NameClaimType = "name";
-        oidcOptions.TokenValidationParameters.RoleClaimType = "roles";
-        // ........................................................................
-
-        // ........................................................................
-        // Many OIDC providers work with the default issuer validator, but the
-        // configuration must account for the issuer parameterized with "{TENANT ID}" 
-        // returned by the "common" endpoint's /.well-known/openid-configuration
-        // For more information, see
-        // https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/issues/1731
-
-        //var microsoftIssuerValidator = AadIssuerValidator.GetAadIssuerValidator(oidcOptions.Authority);
-        //oidcOptions.TokenValidationParameters.IssuerValidator = microsoftIssuerValidator.Validate;
-        // ........................................................................
-
-        // ........................................................................
-        // OIDC connect options set later via ConfigureCookieOidc
-        //
-        // (1) The "offline_access" scope is required for the refresh token.
-        //
-        // (2) SaveTokens is set to true, which saves the access and refresh tokens
-        // in the cookie, so the app can authenticate requests for weather data and
-        // cookie, so the app can authenticate requests for weather data and
-        // use the refresh token to obtain a new access token on access token
-        // expiration.
-        // ........................................................................
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
     })
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+    .AddCookie(cookieOptions =>
+    {
+        cookieOptions.Cookie.Name = "__Host-pizzashop-auth";
+        cookieOptions.Cookie.HttpOnly = true;
+        cookieOptions.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        cookieOptions.Cookie.SameSite = SameSiteMode.Strict;
+        cookieOptions.Cookie.Path = "/";
+    })
+    .AddOpenIdConnect(options =>
+    {
+        options.Authority = keycloakAuthority;
+
+        if (builder.Environment.IsDevelopment()
+            && keycloakAuthority.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+        {
+            options.RequireHttpsMetadata = false;
+        }
+
+        options.ClientId = keycloakClientId;
+        options.ClientSecret = keycloakClientSecret;
+
+        options.ResponseType = OpenIdConnectResponseType.Code;
+        options.CallbackPath = "/signin-oidc";
+        options.SignedOutCallbackPath = "/signout-callback-oidc";
+
+        // BFF keeps tokens server-side in the auth ticket.
+        options.SaveTokens = true;
+
+        options.Scope.Clear();
+        options.Scope.Add("openid");
+        options.Scope.Add("profile");
+        options.Scope.Add("email");
+    });
 
 // ConfigureCookieOidc attaches a cookie OnValidatePrincipal callback to get
 // a new access token when the current one expires, and reissue a cookie with the
-// new access token saved inside. If the refresh fails, the user will be signed
-// out. OIDC connect options are set for saving tokens and the offline access
-// scope.
-builder.Services.ConfigureCookieOidc(CookieAuthenticationDefaults.AuthenticationScheme, MS_OIDC_SCHEME);
+// new access token saved inside. OIDC options here already save tokens; the
+// extension adds offline_access and refresh behavior.
+builder.Services.ConfigureCookieOidc(CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationBuilder();
 
 builder.Services.AddCascadingAuthenticationState();
 
@@ -160,13 +123,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents()
     .AddAuthenticationStateSerialization(options => options.SerializeAllClaims = true);
-
-builder.Services.AddHttpForwarderWithServiceDiscovery();
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddHttpClient<IWeatherForecaster, ServerWeatherForecaster>(httpClient =>
-{
-    httpClient.BaseAddress = new("https://weatherapi");
-});
 
 var app = builder.Build();
 
@@ -186,24 +142,43 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+app.UseCors(CorsPolicyName);
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapDefaultEndpoints();
+app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(BlazorWebAppOidc.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(PizzaShop.Web.Client._Imports).Assembly);
 
-app.MapForwarder("/weather-forecast", "https://weatherapi", transformBuilder =>
-{
-    transformBuilder.AddRequestTransform(async transformContext =>
+app.MapPost("/authentication/logout", (HttpContext httpContext, ILogger<Program> logger) =>
     {
-        var accessToken = await transformContext.HttpContext.GetTokenAsync("access_token");
-        transformContext.ProxyRequest.Headers.Authorization = new("Bearer", accessToken);
-    });
-}).RequireAuthorization();
+        logger.LogInformation(
+            "Logout endpoint hit. IsAuthenticated={IsAuthenticated}, User={User}",
+            httpContext.User?.Identity?.IsAuthenticated,
+            httpContext.User?.Identity?.Name ?? "<anonymous>");
 
-app.MapGroup("/authentication").MapLoginAndLogout();
+        var props = new AuthenticationProperties
+        {
+            RedirectUri = spaOrigin
+        };
+
+        return Results.SignOut(
+            props,
+            [
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                OpenIdConnectDefaults.AuthenticationScheme
+            ]);
+    });
+
+// Simple Orleans counter endpoint for testing the cluster.
+app.MapGet("/api/counter/increment", async (IGrainFactory grains) =>
+{
+    var grain = grains.GetGrain<ICounterGrain>("counter");
+    var count = await grain.IncrementAsync();
+    return Results.Ok(new { count });
+});
 
 app.Run();

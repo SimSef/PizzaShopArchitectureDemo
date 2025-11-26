@@ -1,8 +1,37 @@
-using Aspire.Hosting.Keycloak;
-
 var builder = DistributedApplication.CreateBuilder(args);
+
+var storage = builder.AddAzureStorage("storage")
+    .RunAsEmulator();
+var clusteringTable = storage.AddTables("orleans-clustering");
+var grainStorage = storage.AddBlobs("orleans-grainstate");
+var remindersTable = storage.AddTables("orleans-reminders");
+var pubsubTable = storage.AddTables("orleans-pubsub");
+var streamQueues = storage.AddQueues("orleans-streams");
+
+var orleans = builder.AddOrleans("default")
+    .WithClustering(clusteringTable)
+    .WithGrainStorage("Default", grainStorage)
+    .WithReminders(remindersTable)
+    .WithGrainStorage("PubSubStore", pubsubTable)
+    .WithStreaming("AzureQueueProvider", streamQueues);
 
 var keycloak = builder.AddKeycloak("keycloak", 8080)
     .WithRealmImport("./Realm");
+
+var silo = builder.AddProject<Projects.PizzaShop_Orleans_Server>("orleans-server")
+    .WithReference(orleans);
+
+var web = builder.AddProject<Projects.PizzaShop_Web>("web")
+    .WithReference(orleans.AsClient())
+    .WithReference(keycloak)
+    // Keycloak BFF configuration for PizzaShop.Web
+    // Values mirror PizzaShop-realm.json and can be overridden as needed.
+    .WithEnvironment("Keycloak__Authority", "http://localhost:8080/realms/PizzaShop")
+    .WithEnvironment("Keycloak__ClientId", "PizzaShopWeb")
+    .WithEnvironment("Keycloak__ClientSecret", "pizza-shop-web-secret")
+    // SPA origin used by CORS for the BFF pattern.
+    .WithEnvironment("Spa__Origin", "https://localhost:5001")
+    .WaitFor(silo)
+    .WaitFor(keycloak);
 
 builder.Build().Run();

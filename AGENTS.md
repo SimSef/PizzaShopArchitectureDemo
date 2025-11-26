@@ -43,3 +43,18 @@ Scope: This file applies to the entire `PizzaShopArchitectureDemo` repository.
     - Streaming and broadcast: `Orleans info/22-streaming-basics-and-use-cases.md`, `Orleans info/23-stream-providers-and-broadcast-channels.md`.
     - Host/client concerns: `Orleans info/24-host-clients.md`, `Orleans info/25-host-silo-lifecycle.md`.
 - When extending Orleans behavior or adding new grains, consult these docs first and keep new notes in that folder instead of this file.
+- C# projects generally have `ImplicitUsings` enabled; only add explicit `using` directives when they are required (for example, static extension methods or types not covered by implicit usings), and avoid redundant `using` statements.
+
+## Styling / UI theme (PizzaShop.Web)
+
+- Use Tailwind CSS (currently via `PizzaShop.Web/PizzaShop.Web/wwwroot/tailwind.css`) and avoid Bootstrap for new UI work.
+- Overall vibe: warm, modern pizzeria — think wood-fired oven and neon signage, not generic admin dashboard.
+- Color palette (Tailwind-ish):
+  - Base/backgrounds: warm neutrals (e.g., `stone-50`/`stone-100`).
+  - Primary accent: “tomato sauce” red/orange (e.g., `orange-500`/`red-500`).
+  - Secondary accent: “basil” green (e.g., `emerald-500`/`green-600`).
+  - Highlights/CTAs: “cheese” yellow (e.g., `amber-400`/`amber-500`).
+- Layout & components:
+  - Prefer simple, card-like surfaces with soft radius (`rounded-lg`/`rounded-xl`) and subtle shadows (`shadow-sm`/`shadow-md`).
+  - Use clear focus styles (`focus:outline-none` + `focus:ring-2` in matching accent colors) for accessibility.
+  - Keep pages relatively minimal; avoid overly dense, “enterprise” look unless explicitly requested.

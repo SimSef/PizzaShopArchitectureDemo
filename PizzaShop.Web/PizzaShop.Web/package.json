@@ -1,0 +1,12 @@
+{
+  "name": "pizzashop.web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.cjs -i ./wwwroot/css/input.css -o ./wwwroot/css/tailwind.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.4"
+  }
+}
+

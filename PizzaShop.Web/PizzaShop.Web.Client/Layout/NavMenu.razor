@@ -1,22 +1,30 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">BlazorWebAppOidc</a>
+﻿<div class="top-row ps-3 navbar navbar-dark h-14 flex items-center px-4 bg-amber-700 text-white shadow-md">
+    <div class="container-fluid flex items-center">
+        <a class="navbar-brand text-lg font-semibold tracking-tight" href="">
+            PizzaShop.Web
+        </a>
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+<input type="checkbox" title="Navigation menu" class="navbar-toggler hidden" />
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
+<div class="nav-scrollable bg-stone-900 text-stone-100 h-full">
+    <nav class="nav flex flex-col gap-1 py-4">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            <NavLink class="nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-200 hover:bg-amber-600 hover:text-white"
+                     ActiveClass="bg-amber-700 text-white"
+                     href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span>
+                <span>Home</span>
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-200 hover:bg-amber-600 hover:text-white"
+                     ActiveClass="bg-amber-700 text-white"
+                     href="counter">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span>
+                <span>Counter</span>
             </NavLink>
         </div>
 
@@ -24,17 +32,22 @@
 
         <AuthorizeView>
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="weather">
-                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+                <NavLink class="nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-200 hover:bg-amber-600 hover:text-white"
+                         ActiveClass="bg-amber-700 text-white"
+                         href="weather">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span>
+                    <span>Weather</span>
                 </NavLink>
             </div>
 
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="user-claims">
-                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> User Claims
+                <NavLink class="nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-200 hover:bg-amber-600 hover:text-white"
+                         ActiveClass="bg-amber-700 text-white"
+                         href="user-claims">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span>
+                    <span>User Claims</span>
                 </NavLink>
             </div>
         </AuthorizeView>
     </nav>
 </div>
-

@@ -8,11 +8,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Aspire\Aspire.ServiceDefaults\Aspire.ServiceDefaults.csproj" />
     <ProjectReference Include="..\PizzaShop.Web.Client\PizzaShop.Web.Client.csproj" />
+    <ProjectReference Include="..\..\PizzaShop.Orleans.Library\PizzaShop.Orleans.Library.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="9.5.2" />
+    <PackageReference Include="Aspire.Azure.Data.Tables" Version="13.0.0" />
+    <PackageReference Include="Microsoft.Orleans.Client" Version="9.2.1" />
+    <PackageReference Include="Microsoft.Orleans.Clustering.AzureStorage" Version="9.2.1" />
+    <PackageReference Include="Microsoft.Orleans.Persistence.AzureStorage" Version="9.2.1" />
+    <PackageReference Include="Microsoft.Orleans.Streaming.AzureStorage" Version="9.2.1" />
   </ItemGroup>
+
+  <Target Name="BuildTailwindCss" BeforeTargets="Build" Condition=" '$(DesignTimeBuild)' != 'true' ">
+    <!-- Install npm packages once per machine/clone -->
+    <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)"
+          Condition="!Exists('$(MSBuildProjectDirectory)/node_modules')" />
+
+    <!-- Build Tailwind CSS into wwwroot/css/tailwind.css -->
+    <Exec Command="npm run build:css" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
 
 </Project>
