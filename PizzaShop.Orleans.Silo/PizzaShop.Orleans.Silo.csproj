@@ -53,7 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\grains\grains.csproj" />
+    <ProjectReference Include="..\PizzaShop.Orleans.Library\PizzaShop.Orleans.Library.csproj" />
   </ItemGroup>
 
 </Project>
