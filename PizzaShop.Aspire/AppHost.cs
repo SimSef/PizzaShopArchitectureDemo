@@ -19,7 +19,8 @@ var keycloak = builder.AddKeycloak("keycloak", 8080)
     .WithRealmImport("./Realm");
 
 var silo = builder.AddProject<Projects.PizzaShop_Orleans_Server>("orleans-server")
-    .WithReference(orleans);
+    .WithReference(orleans)
+    .WithEndpoint(name: "dashboard", port: 8081, targetPort: 8081, isProxied: false, scheme: "http");
 
 var web = builder.AddProject<Projects.PizzaShop_Web>("web")
     .WithReference(orleans.AsClient())
