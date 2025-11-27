@@ -3,32 +3,22 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Yarp.ReverseProxy.Transforms;
+using Microsoft.Extensions.Hosting;
 using PizzaShop.Orleans.Contract;
 using PizzaShop.Web;
 using PizzaShop.Web.Components;
 using Azure.Data.Tables;
-using Azure.Storage.Blobs;
-using Azure.Storage.Queues;
 
 const string CorsPolicyName = "bff";
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Explicitly register keyed Azure clients using Aspire-provided connection strings.
-// Orleans expects keyed services matching the configured ServiceKey names.
-string GetConnection(string name) =>
-    builder.Configuration.GetConnectionString(name)
-    ?? throw new InvalidOperationException($"Missing connection string '{name}'.");
-
-builder.Services.AddKeyedSingleton<TableServiceClient>("orleans-clustering",
-    (_, _) => new TableServiceClient(GetConnection("orleans-clustering")));
-builder.Services.AddKeyedSingleton<TableServiceClient>("orleans-reminders",
-    (_, _) => new TableServiceClient(GetConnection("orleans-reminders")));
-builder.Services.AddKeyedSingleton<BlobServiceClient>("orleans-grainstate",
-    (_, _) => new BlobServiceClient(GetConnection("orleans-grainstate")));
-builder.Services.AddKeyedSingleton<QueueServiceClient>("orleans-streams",
-    (_, _) => new QueueServiceClient(GetConnection("orleans-streams")));
+// Register keyed Azure clients using Aspire helpers; Orleans expects the keys to
+// match the configured ServiceKey names.
+builder.AddKeyedAzureTableServiceClient("orleans-clustering");
+builder.AddKeyedAzureTableServiceClient("orleans-reminders");
+builder.AddKeyedAzureBlobServiceClient("orleans-grainstate");
+builder.AddKeyedAzureQueueServiceClient("orleans-streams");
 builder.UseOrleansClient();
 
 // SPA origin for BFF CORS (required, no defaults).
@@ -140,11 +130,10 @@ else
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
-app.UseAntiforgery();
-
 app.UseCors(CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 
 app.MapStaticAssets();
 

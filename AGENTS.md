@@ -44,6 +44,7 @@ Scope: This file applies to the entire `PizzaShopArchitectureDemo` repository.
     - Host/client concerns: `Orleans info/24-host-clients.md`, `Orleans info/25-host-silo-lifecycle.md`.
 - When extending Orleans behavior or adding new grains, consult these docs first and keep new notes in that folder instead of this file.
 - C# projects generally have `ImplicitUsings` enabled; only add explicit `using` directives when they are required (for example, static extension methods or types not covered by implicit usings), and avoid redundant `using` statements.
+- When building, prefer running `dotnet build` from the `PizzaShop.Aspire` directory to cover all apps in one pass.
 
 ## Styling / UI theme (PizzaShop.Web)
 
