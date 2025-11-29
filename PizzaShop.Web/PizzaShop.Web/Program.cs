@@ -80,11 +80,11 @@ builder.Services.AddAuthentication(options =>
     {
         options.Authority = keycloakAuthority;
 
-        if (builder.Environment.IsDevelopment()
-            && keycloakAuthority.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+        if (builder.Environment.IsDevelopment())
         {
-            options.RequireHttpsMetadata = false;
+            options.RequireHttpsMetadata = false; // allow HTTP for metadata in dev
         }
+
 
         options.ClientId = keycloakClientId;
         options.ClientSecret = keycloakClientSecret;
@@ -179,11 +179,6 @@ app.MapGet("/authentication/login", (HttpContext httpContext) =>
 
 app.MapMethods("/authentication/logout", ["GET", "POST"], (HttpContext httpContext) =>
 {
-    if (!(httpContext.User?.Identity?.IsAuthenticated ?? false))
-    {
-        return Results.Unauthorized();
-    }
-
     using var activity = authActivitySource.StartActivity("Auth.LogoutEndpoint.SignOut");
 
     var returnUrl = httpContext.Request.Query["returnUrl"].ToString();
@@ -206,7 +201,7 @@ app.MapMethods("/authentication/logout", ["GET", "POST"], (HttpContext httpConte
             CookieAuthenticationDefaults.AuthenticationScheme,
             OpenIdConnectDefaults.AuthenticationScheme
         ]);
-}).AllowAnonymous();
+}).RequireAuthorization();
 
 // Simple Orleans counter endpoint for testing the cluster.
 app.MapGet("/api/counter/increment", async (IGrainFactory grains) =>
