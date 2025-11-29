@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -12,6 +13,10 @@ using Azure.Data.Tables;
 const string CorsPolicyName = "bff";
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddObservability();
+
+var authActivitySource = new ActivitySource("PizzaShop.Web.Auth");
 
 // Register keyed Azure clients using Aspire helpers; Orleans expects the keys to
 // match the configured ServiceKey names.
@@ -88,24 +93,22 @@ builder.Services.AddAuthentication(options =>
         options.CallbackPath = "/signin-oidc";
         options.SignedOutCallbackPath = "/signout-callback-oidc";
 
-        // BFF keeps tokens server-side in the auth ticket.
-        options.SaveTokens = true;
-
         options.Scope.Clear();
         options.Scope.Add("openid");
         options.Scope.Add("profile");
         options.Scope.Add("email");
     });
 
-// ConfigureCookieOidc attaches a cookie OnValidatePrincipal callback to get
-// a new access token when the current one expires, and reissue a cookie with the
-// new access token saved inside. OIDC options here already save tokens; the
-// extension adds offline_access and refresh behavior.
-builder.Services.ConfigureCookieOidc(CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+// Enable refresh tokens via offline_access so the CookieOidcRefresher can
+// keep the authentication cookie valid without forcing the user to re-login.
+builder.Services.ConfigureCookieOidc(
+    CookieAuthenticationDefaults.AuthenticationScheme,
+    OpenIdConnectDefaults.AuthenticationScheme);
 
 builder.Services.AddAuthorizationBuilder();
 
 builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddHttpContextAccessor();
 
 // Remove or set 'SerializeAllClaims' to 'false' if you only want to 
 // serialize name and role claims for CSR.
@@ -127,7 +130,15 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+
+// For server-side requests that hit a 404, redirect back to the home page.
+app.UseStatusCodePages(async context =>
+{
+    if (context.HttpContext.Response.StatusCode == StatusCodes.Status404NotFound)
+    {
+        context.HttpContext.Response.Redirect("/");
+    }
+});
 app.UseHttpsRedirection();
 
 app.UseCors(CorsPolicyName);
@@ -142,25 +153,60 @@ app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(PizzaShop.Web.Client._Imports).Assembly);
 
-app.MapPost("/authentication/logout", (HttpContext httpContext, ILogger<Program> logger) =>
+// Authentication endpoints used by StartOrder/Logout pages.
+app.MapGet("/authentication/login", (HttpContext httpContext) =>
+{
+    using var activity = authActivitySource.StartActivity("Auth.LoginEndpoint.Challenge");
+
+    var returnUrl = httpContext.Request.Query["returnUrl"].ToString();
+    if (string.IsNullOrWhiteSpace(returnUrl))
     {
-        logger.LogInformation(
-            "Logout endpoint hit. IsAuthenticated={IsAuthenticated}, User={User}",
-            httpContext.User?.Identity?.IsAuthenticated,
-            httpContext.User?.Identity?.Name ?? "<anonymous>");
+        returnUrl = "/order";
+    }
 
-        var props = new AuthenticationProperties
-        {
-            RedirectUri = spaOrigin
-        };
+    var props = new AuthenticationProperties
+    {
+        RedirectUri = returnUrl
+    };
 
-        return Results.SignOut(
-            props,
-            [
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                OpenIdConnectDefaults.AuthenticationScheme
-            ]);
-    });
+    activity?.SetTag("auth.return_url", returnUrl);
+    activity?.SetTag("auth.user_authenticated", httpContext.User?.Identity?.IsAuthenticated ?? false);
+
+    return Results.Challenge(
+        props,
+        [OpenIdConnectDefaults.AuthenticationScheme]);
+}).AllowAnonymous();
+
+app.MapMethods("/authentication/logout", ["GET", "POST"], (HttpContext httpContext) =>
+{
+    if (!(httpContext.User?.Identity?.IsAuthenticated ?? false))
+    {
+        return Results.Unauthorized();
+    }
+
+    using var activity = authActivitySource.StartActivity("Auth.LogoutEndpoint.SignOut");
+
+    var returnUrl = httpContext.Request.Query["returnUrl"].ToString();
+    if (string.IsNullOrWhiteSpace(returnUrl))
+    {
+        returnUrl = "/";
+    }
+
+    var props = new AuthenticationProperties
+    {
+        RedirectUri = returnUrl
+    };
+
+    activity?.SetTag("auth.return_url", returnUrl);
+    activity?.SetTag("auth.user_name", httpContext.User?.Identity?.Name ?? "<anonymous>");
+
+    return Results.SignOut(
+        props,
+        [
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            OpenIdConnectDefaults.AuthenticationScheme
+        ]);
+}).AllowAnonymous();
 
 // Simple Orleans counter endpoint for testing the cluster.
 app.MapGet("/api/counter/increment", async (IGrainFactory grains) =>

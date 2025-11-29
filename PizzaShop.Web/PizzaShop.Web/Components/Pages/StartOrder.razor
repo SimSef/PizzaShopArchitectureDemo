@@ -1,0 +1,34 @@
+@page "/start-order"
+@attribute [StreamRendering]
+@using System.Diagnostics
+@inject NavigationManager Navigation
+
+<PageTitle>Start Order</PageTitle>
+
+<div class="min-h-[60vh] flex items-center justify-center bg-[#7f2615] text-[#fef3c7] px-6">
+  <div class="max-w-xl text-center space-y-3">
+    <h1 class="text-3xl md:text-4xl font-extrabold tracking-wide">
+      Warming up the oven for your Merry Crustmas order…
+    </h1>
+    <p class="text-lg md:text-xl leading-relaxed">
+      We’re taking you to the North Pole gatekeeper to make sure it’s really you.
+      Once you’ve signed in, your holiday slice will be waiting.
+    </p>
+  </div>
+</div>
+
+@code {
+    private static readonly ActivitySource ActivitySource = new("PizzaShop.Web.Auth");
+
+  protected override async Task OnInitializedAsync()
+  {
+        using (ActivitySource.StartActivity("Auth.StartLoginRedirect"))
+    {
+      // Allow the initial render to show the message, then wait a moment before redirect.
+      await Task.Delay(TimeSpan.FromSeconds(1));
+
+      var encodedReturnUrl = Uri.EscapeDataString("/order");
+      Navigation.NavigateTo($"/authentication/login?returnUrl={encodedReturnUrl}", forceLoad: true);
+    }
+  }
+}

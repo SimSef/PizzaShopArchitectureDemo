@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace PizzaShop.Web;
 
-// https://github.com/dotnet/aspnetcore/issues/8175
+// Based on https://github.com/dotnet/aspnetcore/issues/8175
 internal sealed class CookieOidcRefresher(IOptionsMonitor<OpenIdConnectOptions> oidcOptionsMonitor)
 {
     private readonly OpenIdConnectProtocolValidator oidcTokenValidator = new()
@@ -33,6 +33,7 @@ internal sealed class CookieOidcRefresher(IOptionsMonitor<OpenIdConnectOptions> 
         var now = oidcOptions.TimeProvider!.GetUtcNow();
         if (now + TimeSpan.FromMinutes(5) < accessTokenExpiration)
         {
+            // Access token is still valid for more than 5 minutes; no refresh needed.
             return;
         }
 
@@ -100,3 +101,4 @@ internal sealed class CookieOidcRefresher(IOptionsMonitor<OpenIdConnectOptions> 
         ]);
     }
 }
+

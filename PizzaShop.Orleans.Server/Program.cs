@@ -6,8 +6,11 @@ using Microsoft.Extensions.Hosting;
 using Orleans.Hosting;
 using Orleans;
 using PizzaShop.Orleans.Contract;
+using PizzaShop.Orleans.Server;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.AddObservability();
 
 // Register keyed Azure clients using Aspire helpers; Orleans expects the keys to
 // match the configured ServiceKey names.

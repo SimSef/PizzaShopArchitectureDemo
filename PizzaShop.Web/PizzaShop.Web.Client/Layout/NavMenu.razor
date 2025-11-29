@@ -1,53 +1,31 @@
-﻿<div class="top-row ps-3 navbar navbar-dark h-14 flex items-center px-4 bg-amber-700 text-white shadow-md">
-    <div class="container-fluid flex items-center">
-        <a class="navbar-brand text-lg font-semibold tracking-tight" href="">
-            PizzaShop.Web
+﻿<header class="sticky top-0 z-50 bg-[#7f2615] border-b border-[#5b1b0f] shadow-md">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4 text-[#fef3c7]">
+        <a href="/" class="flex flex-col gap-1 hover:text-white transition-colors">
+            <span class="text-lg font-extrabold tracking-widest uppercase">Merry Crustmas Pizzeria</span>
+            <span class="text-sm text-[#fee2b3]">“Your Once-a-Year Holiday Slice.”</span>
         </a>
+        <nav class="flex items-center gap-6 text-base font-semibold">
+            <a href="/menu" class="hover:text-white transition-colors">Menu</a>
+            <a href="/about" class="hover:text-white transition-colors">About</a>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="flex items-center gap-4">
+                        <a href="/order" class="inline-flex items-center rounded-full bg-white text-[#7f2615] px-4 py-2 text-sm font-bold tracking-wide shadow hover:shadow-lg transition">
+                            Order
+                        </a>
+                        <a href="/logout"
+                           class="text-sm font-semibold text-[#fee2b3] hover:text-white transition-colors">
+                            Logout
+                        </a>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/start-order"
+                       class="hover:text-white transition-colors">
+                        Order Now
+                    </a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </nav>
     </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler hidden" />
-
-<div class="nav-scrollable bg-stone-900 text-stone-100 h-full">
-    <nav class="nav flex flex-col gap-1 py-4">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-200 hover:bg-amber-600 hover:text-white"
-                     ActiveClass="bg-amber-700 text-white"
-                     href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span>
-                <span>Home</span>
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-200 hover:bg-amber-600 hover:text-white"
-                     ActiveClass="bg-amber-700 text-white"
-                     href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span>
-                <span>Counter</span>
-            </NavLink>
-        </div>
-
-        <LogInOrOut />
-
-        <AuthorizeView>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-200 hover:bg-amber-600 hover:text-white"
-                         ActiveClass="bg-amber-700 text-white"
-                         href="weather">
-                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span>
-                    <span>Weather</span>
-                </NavLink>
-            </div>
-
-            <div class="nav-item px-3">
-                <NavLink class="nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-200 hover:bg-amber-600 hover:text-white"
-                         ActiveClass="bg-amber-700 text-white"
-                         href="user-claims">
-                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span>
-                    <span>User Claims</span>
-                </NavLink>
-            </div>
-        </AuthorizeView>
-    </nav>
-</div>
+</header>

@@ -46,16 +46,25 @@ Scope: This file applies to the entire `PizzaShopArchitectureDemo` repository.
 - C# projects generally have `ImplicitUsings` enabled; only add explicit `using` directives when they are required (for example, static extension methods or types not covered by implicit usings), and avoid redundant `using` statements.
 - When building, prefer running `dotnet build` from the `PizzaShop.Aspire` directory to cover all apps in one pass.
 
+## Observability (PizzaShop.Web)
+
+- Use OpenTelemetry for tracing, metrics, and logs. Configure providers and exporters once during application startup (see `ObservabilityRegistration.AddObservability` and `Program.cs`), not ad hoc inside random code paths.
+- Prefer spans (`ActivitySource`) for important flows (for example, auth and BFF entry points) and avoid excessive per-request logging in components or grains unless you’re actively debugging an issue.
+- When adding new traces or metrics, keep names consistent with the existing `PizzaShop.Web.Auth` source and Aspire conventions so they show up cleanly in the Aspire dashboard.
+
 ## Styling / UI theme (PizzaShop.Web)
 
 - Use Tailwind CSS (currently via `PizzaShop.Web/PizzaShop.Web/wwwroot/tailwind.css`) and avoid Bootstrap for new UI work.
-- Overall vibe: warm, modern pizzeria — think wood-fired oven and neon signage, not generic admin dashboard.
+- Overall vibe: cozy, Christmassy pizzeria — think warm lights, deep reds, evergreen branches, and wood; avoid flat “corporate” or generic admin styles.
 - Color palette (Tailwind-ish):
-  - Base/backgrounds: warm neutrals (e.g., `stone-50`/`stone-100`).
-  - Primary accent: “tomato sauce” red/orange (e.g., `orange-500`/`red-500`).
-  - Secondary accent: “basil” green (e.g., `emerald-500`/`green-600`).
-  - Highlights/CTAs: “cheese” yellow (e.g., `amber-400`/`amber-500`).
+  - Base/backgrounds: deep, warm reds and browns (e.g., `red-900`, `red-800`, `amber-900`, `stone-900`) with softer overlays (`red-950/90`, `stone-950/80`) for modals and panels.
+  - Primary accent: “Christmas red” (e.g., `red-500`/`red-600`) used for key actions, selections, and important text highlights.
+  - Secondary accent: “pine” green (e.g., `emerald-500`/`green-500`/`green-600`) used for badges, borders, and subtle highlights (mirroring basil and tree branches).
+  - Tertiary accent: “golden lights” (e.g., `amber-300`/`amber-400`) for icons, dividers, small dots, and hover glows; avoid using this as the main background.
+  - Surfaces/cards: rich, wood-like browns (e.g., `amber-900`, `stone-800`) with subtle gradients or overlays to evoke a wooden table/board under the pizzas.
+  - Text: mostly `stone-50`/`stone-100` on dark backgrounds, with muted `stone-400` for secondary text.
 - Layout & components:
-  - Prefer simple, card-like surfaces with soft radius (`rounded-lg`/`rounded-xl`) and subtle shadows (`shadow-sm`/`shadow-md`).
-  - Use clear focus styles (`focus:outline-none` + `focus:ring-2` in matching accent colors) for accessibility.
-  - Keep pages relatively minimal; avoid overly dense, “enterprise” look unless explicitly requested.
+  - Prefer simple, card-like surfaces with soft radius (`rounded-lg`/`rounded-xl`) and warm, soft shadows (`shadow-md`/`shadow-lg` with low blur) to feel like lit boards on a table.
+  - Use clear focus styles (`focus:outline-none` + `focus:ring-2 focus:ring-offset-2 focus:ring-red-500/70` or `focus:ring-emerald-500/70`) so keyboard navigation remains obvious against dark backgrounds.
+  - Introduce small “light” details (e.g., dotted backgrounds, subtle `bg-gradient-to-b from-red-900 via-red-950 to-stone-950`) sparingly to echo the out-of-focus Christmas lights in imagery.
+  - Keep content relatively minimal and centered, with breathing room around pizzas/images; avoid overly dense tables or grids unless explicitly requested, and soften them with spacing and borders when needed.

@@ -39,6 +39,9 @@
       "email": "testuser@example.com",
       "emailVerified": true,
       "requiredActions": [],
+      "realmRoles": [
+        "offline_access"
+      ],
       "credentials": [
         {
           "type": "password",

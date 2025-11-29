@@ -1,11 +1,12 @@
-﻿@page "/user-claims"
+@page "/order"
 @using System.Security.Claims
+@using System.Diagnostics
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 
-<PageTitle>User Claims</PageTitle>
+<PageTitle>Order</PageTitle>
 
-<h1>User Claims</h1>
+<h1>Your Once-a-Year Holiday Slice</h1>
 
 @if (claims.Any())
 {
@@ -18,6 +19,7 @@
 }
 
 @code {
+    private static readonly ActivitySource ActivitySource = new("PizzaShop.Web.Auth");
     private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
 
     [CascadingParameter]
@@ -25,12 +27,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthState == null)
+        using (ActivitySource.StartActivity("Auth.Order.Arrived"))
         {
-            return;
-        }
+            if (AuthState == null)
+            {
+                return;
+            }
 
-        var authState = await AuthState;
-        claims = authState.User.Claims;
+            var authState = await AuthState;
+            claims = authState.User.Claims;
+        }
     }
 }
