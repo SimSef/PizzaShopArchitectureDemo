@@ -73,7 +73,7 @@ builder.Services.AddAuthentication(options =>
         cookieOptions.Cookie.Name = "__Host-pizzashop-auth";
         cookieOptions.Cookie.HttpOnly = true;
         cookieOptions.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        cookieOptions.Cookie.SameSite = SameSiteMode.Strict;
+        cookieOptions.Cookie.SameSite = SameSiteMode.Lax;
         cookieOptions.Cookie.Path = "/";
     })
     .AddOpenIdConnect(options =>
