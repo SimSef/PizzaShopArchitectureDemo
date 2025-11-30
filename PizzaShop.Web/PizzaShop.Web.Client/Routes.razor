@@ -1,9 +1,0 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(PizzaShop.Web.Client.Pages.NotFound)">
-  <Found Context="routeData">
-    <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
-      <NotAuthorized>
-        <RedirectToLogin />
-      </NotAuthorized>
-    </AuthorizeRouteView>
-  </Found>
-</Router>

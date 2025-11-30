@@ -1,3 +1,6 @@
 {
-  "appHostPath": "../PizzaShop.Aspire/PizzaShop.Aspire.csproj"
+  "appHostPath": "../PizzaShop.Aspire/PizzaShop.Aspire.csproj",
+  "features": {
+    "dotnetSdkInstallationEnabled": "true"
+  }
 }

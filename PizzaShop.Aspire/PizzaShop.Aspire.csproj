@@ -12,11 +12,12 @@
     <PackageReference Include="Aspire.Hosting.Keycloak" Version="13.0.1-preview.1.25575.3" />
     <PackageReference Include="Aspire.Hosting.Orleans" Version="13.0.1" />
     <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.0.1" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PizzaShop.Orleans.Server\PizzaShop.Orleans.Server.csproj" />
-    <ProjectReference Include="..\PizzaShop.Web\PizzaShop.Web\PizzaShop.Web.csproj" />
+    <ProjectReference Include="..\PizzaShop.Web.Bff\PizzaShop.Web.Bff.csproj" />
   </ItemGroup>
 
 </Project>

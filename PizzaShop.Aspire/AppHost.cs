@@ -22,7 +22,7 @@ var silo = builder.AddProject<Projects.PizzaShop_Orleans_Server>("orleans-server
     .WithReference(orleans)
     .WithEndpoint(name: "dashboard", port: 8081, targetPort: 8081, isProxied: false, scheme: "http");
 
-var web = builder.AddProject<Projects.PizzaShop_Web>("web")
+var web = builder.AddProject<Projects.PizzaShop_Web_Bff>("web-bff")
     .WithReference(orleans.AsClient())
     .WithReference(keycloak)
     // Keycloak BFF configuration for PizzaShop.Web
@@ -31,8 +31,15 @@ var web = builder.AddProject<Projects.PizzaShop_Web>("web")
     .WithEnvironment("Keycloak__ClientId", "PizzaShopWeb")
     .WithEnvironment("Keycloak__ClientSecret", "pizza-shop-web-secret")
     // SPA origin used by CORS for the BFF pattern.
-    .WithEnvironment("Spa__Origin", "https://localhost:5001")
+    .WithEnvironment("Spa__Origin", "http://localhost:3000")
     .WaitFor(silo)
     .WaitFor(keycloak);
+
+var reactApp = builder.AddJavaScriptApp("pizzashop-web", "../pizzashop-web")
+    .WithRunScript("start")
+    .WithBuildScript("build")
+    .WithEndpoint(name: "http", port: 3000, targetPort: 3000, isProxied: false, scheme: "http")
+    .WithReference(web)
+    .WaitFor(web);
 
 builder.Build().Run();
