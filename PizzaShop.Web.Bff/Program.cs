@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using PizzaShop.Orleans.Contract;
 using PizzaShop.Web.Bff;
+using PizzaShop.Web.Bff.Orders;
 
 const string CorsPolicyName = "bff";
 
@@ -194,5 +195,8 @@ app.MapGet("/api/me", async (HttpContext httpContext) =>
     var claims = authenticateResult.Principal.Claims.Select(c => new { type = c.Type, value = c.Value });
     return Results.Ok(new { claims });
 });
+
+// Create order endpoint – called by the SPA when the user checks out.
+app.MapCreateOrderEndpoint();
 
 app.Run();

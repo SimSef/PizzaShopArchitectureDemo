@@ -1,7 +1,7 @@
 import React from 'react';
 import { usePageTitle } from '../hooks/usePageTitle';
 
-const pizzas = [
+export const pizzas = [
   {
     id: 1,
     name: 'Margherita Natale',
@@ -10,6 +10,7 @@ const pizzas = [
     align: 'left',
     description:
       'Slow-risen dough, bright tomato sugo, fior di latte and basil leaves scattered like little wreaths. The purest way to taste Christmas on a crust.',
+    price: 9.5,
   },
   {
     id: 2,
@@ -19,6 +20,7 @@ const pizzas = [
     align: 'right',
     description:
       'Crisp-edged pepperoni, melted mozzarella and a rich tomato base, dotted with chili flakes like glowing sleigh lights on fresh snow.',
+    price: 10.5,
   },
   {
     id: 3,
@@ -28,6 +30,7 @@ const pizzas = [
     align: 'left',
     description:
       'A creamy white base with fior di latte, taleggio and Parmesan, drizzled with truffle oil and scattered with mushrooms like a winter forest floor.',
+    price: 11,
   },
   {
     id: 4,
@@ -37,6 +40,7 @@ const pizzas = [
     align: 'right',
     description:
       'Paper-thin prosciutto ribbons, peppery rocket and shaved Parmesan on a light tomato base—like a savory garland across a festive table.',
+    price: 9.75,
   },
   {
     id: 5,
@@ -46,6 +50,7 @@ const pizzas = [
     align: 'left',
     description:
       'Smoky ham, sweet pineapple and a blanket of mozzarella, for those who like their Christmas with a little sunshine.',
+    price: 11.25,
   },
   {
     id: 6,
@@ -55,6 +60,7 @@ const pizzas = [
     align: 'right',
     description:
       'Roasted peppers, courgette, red onion and olives on a tomato base—colourful, cozy and completely meat-free.',
+    price: 10,
   },
   {
     id: 7,
@@ -64,6 +70,7 @@ const pizzas = [
     align: 'left',
     description:
       'Smoky BBQ chicken, red onion and a drizzle of sauce leaving a trail across melted cheese, like hoofprints in fresh snow.',
+    price: 11.5,
   },
   {
     id: 8,
@@ -73,6 +80,7 @@ const pizzas = [
     align: 'right',
     description:
       'Pepperoni, sausage, peppers, onions and olives loaded onto a hearty base—the everything-on-it slice for the hungriest elves.',
+    price: 12,
   },
   {
     id: 9,
@@ -82,6 +90,7 @@ const pizzas = [
     align: 'left',
     description:
       'Artichokes, ham, mushrooms and olives come together like a choir of classic Italian flavors around the tree.',
+    price: 11.25,
   },
   {
     id: 10,
@@ -91,6 +100,7 @@ const pizzas = [
     align: 'right',
     description:
       'A rich medley of cured meats piled high for late-night feasts and post-carol hunger.',
+    price: 12.5,
   },
   {
     id: 11,
@@ -100,6 +110,7 @@ const pizzas = [
     align: 'left',
     description:
       'Anchovies, capers and olives on a bright tomato base—salty, briny, and perfect for those who like their Christmas stories a little bolder.',
+    price: 10.75,
   },
   {
     id: 12,
@@ -109,6 +120,7 @@ const pizzas = [
     align: 'right',
     description:
       'Charred, airy crust, simple toppings and a soft centre—the kind of slice you eat slowly while staring at the flicker of fairy lights.',
+    price: 9.95,
   },
 ];
 
@@ -165,4 +177,3 @@ export default function Menu() {
     </div>
   );
 }
-

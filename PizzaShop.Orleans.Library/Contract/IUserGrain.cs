@@ -14,5 +14,10 @@ namespace PizzaShop.Orleans.Contract
         /// Sets or updates the user profile data for this grain.
         /// </summary>
         Task SetProfileAsync(string username, string? email, string? firstName, string? lastName);
+
+        /// <summary>
+        /// Returns a display name for this user (typically the username).
+        /// </summary>
+        Task<string> GetDisplayNameAsync();
     }
 }
