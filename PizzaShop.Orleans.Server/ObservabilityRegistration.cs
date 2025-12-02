@@ -37,6 +37,7 @@ public static class ObservabilityRegistration
                 tracer
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
+                    .AddSource("PizzaShop.Orleans.Server.Seeding")
                     .AddSource("Microsoft.Orleans.Runtime")
                     .AddSource("Microsoft.Orleans.Application")
                     .AddOtlpExporter();

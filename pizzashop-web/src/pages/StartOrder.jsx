@@ -9,7 +9,7 @@ export default function StartOrder() {
     const timer = setTimeout(() => {
       const encodedReturnUrl = encodeURIComponent('/order');
       window.location.href = `${BFF_BASE_URL}/authentication/login?returnUrl=${encodedReturnUrl}`;
-    }, 1000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, []);

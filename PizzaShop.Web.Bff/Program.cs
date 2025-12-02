@@ -182,14 +182,6 @@ app.MapMethods("/authentication/logout", ["GET", "POST"], (HttpContext httpConte
         ]);
 }).RequireAuthorization();
 
-// Simple Orleans counter endpoint for testing the cluster.
-app.MapGet("/api/counter/increment", async (IGrainFactory grains) =>
-{
-    var grain = grains.GetGrain<ICounterGrain>("counter");
-    var count = await grain.IncrementAsync();
-    return Results.Ok(new { count });
-});
-
 // Authenticated user info for BFF clients (no tokens, just claims).
 app.MapGet("/api/me", async (HttpContext httpContext) =>
 {

@@ -9,7 +9,7 @@ export default function Logout() {
     const timer = setTimeout(() => {
       const encodedReturnUrl = encodeURIComponent('/');
       window.location.href = `${BFF_BASE_URL}/authentication/logout?returnUrl=${encodedReturnUrl}`;
-    }, 1000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, []);
