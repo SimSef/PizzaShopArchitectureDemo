@@ -14,9 +14,9 @@ public class UserGrain() : Grain, IUserGrain
     public Task SetProfileAsync(string username, string? email, string? firstName, string? lastName)
     {
         Username = username;
-        Email = email;
-        FirstName = firstName;
-        LastName = lastName;
+        Email = email ?? string.Empty;
+        FirstName = firstName ?? string.Empty;
+        LastName = lastName ?? string.Empty;
 
         return Task.CompletedTask;
     }

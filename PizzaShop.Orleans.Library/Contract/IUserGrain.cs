@@ -7,6 +7,7 @@ namespace PizzaShop.Orleans.Contract
     /// Represents a user of the PizzaShop system.
     /// The grain identity should match the user identifier used by the frontend (for example, the OIDC subject or username).
     /// </summary>
+    [Alias("user")]
     public interface IUserGrain : IGrainWithStringKey
     {
         /// <summary>
