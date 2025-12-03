@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../auth/AuthContext';
 
 export default function NavMenu() {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, isAdmin } = useAuth();
   const path = window.location.pathname.toLowerCase();
 
   return (
@@ -35,12 +35,21 @@ export default function NavMenu() {
           {/* Auth section: mirror Blazor AuthorizeView */}
           {!isLoading && isAuthenticated && (
             <div className="flex items-center gap-4">
-              <a
-                href="/order"
-                className="inline-flex items-center rounded-full bg-white text-[#7f2615] px-4 py-2 text-sm font-bold tracking-wide shadow hover:shadow-lg transition"
-              >
-                Order
-              </a>
+              {isAdmin ? (
+                <a
+                  href="/dashboard"
+                  className="inline-flex items-center rounded-full bg-white text-[#7f2615] px-4 py-2 text-sm font-bold tracking-wide shadow hover:shadow-lg transition"
+                >
+                  Dashboard
+                </a>
+              ) : (
+                <a
+                  href="/order"
+                  className="inline-flex items-center rounded-full bg-white text-[#7f2615] px-4 py-2 text-sm font-bold tracking-wide shadow hover:shadow-lg transition"
+                >
+                  Order
+                </a>
+              )}
               <a
                 href="/logout"
                 className="text-sm font-semibold text-[#fee2b3] hover:text-white transition-colors"
@@ -63,4 +72,3 @@ export default function NavMenu() {
     </header>
   );
 }
-

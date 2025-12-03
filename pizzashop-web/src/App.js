@@ -6,6 +6,7 @@ import StartOrder from './pages/StartOrder';
 import Logout from './pages/Logout';
 import Order from './pages/Order';
 import NotFound from './pages/NotFound';
+import Dashboard from './pages/Dashboard';
 import NavMenu from './components/NavMenu';
 
 function App() {
@@ -30,6 +31,9 @@ function App() {
       break;
     case '/order':
       Page = Order;
+      break;
+    case '/dashboard':
+      Page = Dashboard;
       break;
     default:
       Page = NotFound;

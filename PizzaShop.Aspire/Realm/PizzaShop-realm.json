@@ -30,6 +30,18 @@
   "defaultOptionalClientScopes": [
     "offline_access"
   ],
+  "roles": {
+    "realm": [
+      {
+        "name": "pizza-customer",
+        "description": "PizzaShop customer"
+      },
+      {
+        "name": "pizza-admin",
+        "description": "PizzaShop admin"
+      }
+    ]
+  },
   "users": [
     {
       "username": "testuser",
@@ -40,7 +52,28 @@
       "emailVerified": true,
       "requiredActions": [],
       "realmRoles": [
-        "offline_access"
+        "offline_access",
+        "pizza-customer"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "P@ssw0rd!",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@example.com",
+      "emailVerified": true,
+      "requiredActions": [],
+      "realmRoles": [
+        "offline_access",
+        "pizza-admin"
       ],
       "credentials": [
         {

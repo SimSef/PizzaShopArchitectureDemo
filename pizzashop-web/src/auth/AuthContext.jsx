@@ -5,6 +5,8 @@ const AuthContext = createContext({
   isLoading: true,
   isAuthenticated: false,
   claims: [],
+  isAdmin: false,
+  isCustomer: false,
 });
 
 export function AuthProvider({ children }) {
@@ -12,6 +14,8 @@ export function AuthProvider({ children }) {
     isLoading: true,
     isAuthenticated: false,
     claims: [],
+    isAdmin: false,
+    isCustomer: false,
   });
 
   useEffect(() => {
@@ -36,10 +40,33 @@ export function AuthProvider({ children }) {
 
         const data = await response.json();
         if (!cancelled) {
+          const claims = Array.isArray(data.claims) ? data.claims : [];
+
+          // Debug: inspect raw claims coming from the BFF.
+          // This helps verify what Keycloak roles look like in the SPA.
+          // eslint-disable-next-line no-console
+          console.log('[Auth] claims from /api/me', claims);
+
+          let isAdmin = false;
+          let isCustomer = false;
+          const realmAccess = claims.find((c) => c.type === 'realm_access');
+          if (realmAccess && typeof realmAccess.value === 'string') {
+            try {
+              const parsed = JSON.parse(realmAccess.value);
+              const roles = Array.isArray(parsed.roles) ? parsed.roles : [];
+              isAdmin = roles.includes('pizza-admin');
+              isCustomer = roles.includes('pizza-customer');
+            } catch {
+              // ignore parse errors, treat as no roles
+            }
+          }
+
           setState({
             isLoading: false,
             isAuthenticated: true,
-            claims: Array.isArray(data.claims) ? data.claims : [],
+            claims,
+            isAdmin,
+            isCustomer,
           });
         }
       } catch {
@@ -48,6 +75,8 @@ export function AuthProvider({ children }) {
             isLoading: false,
             isAuthenticated: false,
             claims: [],
+            isAdmin: false,
+            isCustomer: false,
           });
         }
       }

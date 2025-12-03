@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Orleans;
 using PizzaShop.Orleans.Contract;
+using PizzaShop.Web.Bff.Admin;
 
 namespace PizzaShop.Web.Bff.Orders;
 
@@ -51,6 +52,8 @@ public static class CreateOrderEndpoint
                 var orderId = Guid.NewGuid();
                 var orderGrain = grainClient.GetGrain<IOrderGrain>(orderId);
                 await orderGrain.CreateAsync(userId, userName, summary, total);
+
+                AdminDashboardState.RegisterOrder(userId, userName, summary, total, orderId);
 
                 return Results.Ok(new { orderId, total });
             })

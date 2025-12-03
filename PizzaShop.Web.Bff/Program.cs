@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using PizzaShop.Orleans.Contract;
 using PizzaShop.Web.Bff;
 using PizzaShop.Web.Bff.Orders;
+using PizzaShop.Web.Bff.Admin;
 
 const string CorsPolicyName = "bff";
 
@@ -93,6 +94,12 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("openid");
         options.Scope.Add("profile");
         options.Scope.Add("email");
+        options.Scope.Add("roles");
+
+        // Map Keycloak role JSON blocks into claims so the SPA
+        // can inspect them via /api/me (e.g., realm_access.roles).
+        options.ClaimActions.MapJsonKey("realm_access", "realm_access");
+        options.ClaimActions.MapJsonKey("resource_access", "resource_access");
     });
 
 // Enable refresh tokens via offline_access so the CookieOidcRefresher can
@@ -192,11 +199,14 @@ app.MapGet("/api/me", async (HttpContext httpContext) =>
         return Results.Unauthorized();
     }
 
-    var claims = authenticateResult.Principal.Claims.Select(c => new { type = c.Type, value = c.Value });
+    var claims = authenticateResult.Principal.Claims.Select(c => new { type = c.Type, value = c.Value }).ToList();
     return Results.Ok(new { claims });
 });
 
 // Create order endpoint – called by the SPA when the user checks out.
 app.MapCreateOrderEndpoint();
+
+// Admin dashboard endpoint – returns in-memory summary of users and orders.
+app.MapAdminDashboardEndpoint();
 
 app.Run();
